@@ -4,12 +4,15 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
+import udoido.project.first.model.member.entity.Member;
+import udoido.project.first.model.project.entity.Project;
+import udoido.project.first.model.work.type.WorkState;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -19,7 +22,7 @@ public class Work {
 
     @Id
     @GeneratedValue
-    private int id;
+    private Long id;
 
     // 업무명
     private String name;
@@ -28,10 +31,10 @@ public class Work {
     private String desc;
 
     // 중요도
-    private int proiroty;
+    private Byte priority;
 
     // 상위 업무 아이디
-    private int parentID;
+    private Long parentID;
 
     // 시작 날짜
     private LocalDate startDate;
@@ -40,15 +43,27 @@ public class Work {
     private LocalDate endDate;
 
     // 업무 상태
-    // TODO enum 타입으로 변경하기
-    private String state;
+    @Enumerated(EnumType.STRING)
+    private WorkState state;
 
     //등록 날짜
     @CreationTimestamp
     private LocalDateTime regDate;
 
-    // TODO Project 엔티티랑 조인
+    // 프로젝트 매핑
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
 
+    // 회원 매핑
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "work_member",
+            joinColumns = @JoinColumn(name="member_id"),
+            inverseJoinColumns = @JoinColumn(name="work_id")
+    )
+    private List<Member> members;
 
+    @OneToMany(mappedBy = "work", fetch = FetchType.LAZY)
+    private List<WorkComment> comments;
 }
 
